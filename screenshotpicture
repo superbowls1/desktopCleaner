@@ -1,0 +1,67 @@
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+
+public class DesktopCleaner {
+
+    public static void main(String[] args) {
+        // Define the desktop path
+        String userHome = System.getProperty("user.home");
+        File desktop = new File(userHome, "Desktop");
+
+        // making the folders on desktop to store items
+        File picturesFolder = new File(desktop, "Pictures");
+        File screenshotsFolder = new File(desktop, "Screenshots");
+
+        // Create the folders if they don't exist
+        if (!picturesFolder.exists()) {
+            picturesFolder.mkdirs();
+        }
+        if (!screenshotsFolder.exists()) {
+            screenshotsFolder.mkdirs();
+        }
+
+        // List of names to look for
+        String[] pictureExtensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff"};
+        String[] screenshotKeywords = {"screenshot", "Screen Shot"};  // Add more variations if needed
+
+        // Get all files from the desktop
+        File[] files = desktop.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    String fileName = file.getName().toLowerCase();
+
+                    // Check if the file is a picture
+                    for (String extension : pictureExtensions) {
+                        if (fileName.endsWith(extension)) {
+                            moveFile(file, picturesFolder);
+                            break;
+                        }
+                    }
+
+                    // Check if the file is a screenshot
+                    for (String keyword : screenshotKeywords) {
+                        if (fileName.contains(keyword.toLowerCase())) {
+                            moveFile(file, screenshotsFolder);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Function to move files to the specified folder
+    private static void moveFile(File file, File destinationFolder) {
+        try {
+            Path destPath = new File(destinationFolder, file.getName()).toPath();
+            Files.move(file.toPath(), destPath, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("Moved " + file.getName() + " to " + destinationFolder.getName());
+        } catch (Exception e) {
+            System.err.println("Failed to move " + file.getName() + ": " + e.getMessage());
+        }
+    }
+}
